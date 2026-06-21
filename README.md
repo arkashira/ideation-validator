@@ -1,13 +1,8 @@
 # Ideation Validator
-
-A tool for validating ideas with a guided onboarding tour.
+This project provides a simple ideation validator that logs idea requests and filters them based on a retention policy.
 
 ## Usage
-
-1. Run the onboarding tour: `python -m src.onboarding`
-2. Skip the tour: `python -m src.onboarding --skip`
-3. Replay the tour: `python -m src.onboarding --replay`
+To use the ideation validator, create an instance of the `IdeaValidator` class and call the `log_idea` method to log an idea request. You can then call the `get_ideas` method to retrieve all logged ideas or the `filter_ideas_by_retention_policy` method to filter ideas based on a retention policy.
 
 ## Testing
-
-Run the tests: `python -m pytest tests`
+To run the tests, use the `pytest` command.
