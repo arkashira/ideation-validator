@@ -1,10 +1,5 @@
 # Ideation Validator
+A Python project for validating ideas based on market metrics.
 
-A simple Python project that generates and validates software tool ideas.
-
-## Usage
-
-1. Run `python -m pytest` to run the tests.
-2. Use the `IdeationValidator` class to generate and validate ideas.
-
-## Example
+## Installation
+To install the project, run the following command:
