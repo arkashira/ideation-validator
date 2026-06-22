@@ -1,37 +1,80 @@
-from ideation_validator import IdeaValidator, IdeaRequest
+from ideation_validator import Idea, IdeaGenerator
 import pytest
-from datetime import datetime, timedelta
 
-def test_log_idea():
-    validator = IdeaValidator()
-    validator.log_idea("test_keyword", ["tag1", "tag2"], 1)
-    assert len(validator.get_ideas()) == 1
-    idea = validator.get_ideas()[0]
-    assert idea.keyword == "test_keyword"
-    assert idea.tags == ["tag1", "tag2"]
-    assert idea.user_id == 1
-
-def test_filter_ideas_by_retention_policy():
-    validator = IdeaValidator()
-    validator.log_idea("test_keyword1", ["tag1", "tag2"], 1)
-    idea = IdeaRequest(
-        timestamp=(datetime.now() - timedelta(days=730)).isoformat(),
-        keyword="test_keyword2",
-        tags=["tag3", "tag4"],
-        user_id=2
-    )
-    validator.ideas.append(idea)
-    filtered_ideas = validator.filter_ideas_by_retention_policy(2)
+def test_filter_by_tags():
+    ideas = [
+        Idea(1, ["tech", "software"]),
+        Idea(2, ["fashion", "design"]),
+        Idea(3, ["tech", "hardware"]),
+    ]
+    generator = IdeaGenerator(ideas)
+    tags = ["tech"]
+    filtered_ideas = generator.filter_by_tags(tags)
     assert len(filtered_ideas) == 2
+    assert filtered_ideas[0].id == 1
+    assert filtered_ideas[1].id == 3
 
-def test_filter_ideas_by_retention_policy_edge_case():
-    validator = IdeaValidator()
-    idea = IdeaRequest(
-        timestamp=(datetime.now() - timedelta(days=730)).isoformat(),
-        keyword="test_keyword2",
-        tags=["tag3", "tag4"],
-        user_id=2
-    )
-    validator.ideas.append(idea)
-    filtered_ideas = validator.filter_ideas_by_retention_policy(1)
+def test_filter_by_tags_empty():
+    ideas = [
+        Idea(1, ["tech", "software"]),
+        Idea(2, ["fashion", "design"]),
+        Idea(3, ["tech", "hardware"]),
+    ]
+    generator = IdeaGenerator(ideas)
+    tags = []
+    filtered_ideas = generator.filter_by_tags(tags)
     assert len(filtered_ideas) == 0
+
+def test_get_tags():
+    ideas = [
+        Idea(1, ["tech", "software"]),
+        Idea(2, ["fashion", "design"]),
+        Idea(3, ["tech", "hardware"]),
+    ]
+    generator = IdeaGenerator(ideas)
+    tags = generator.get_tags()
+    assert len(tags) == 5
+    assert "tech" in tags
+    assert "software" in tags
+    assert "fashion" in tags
+    assert "design" in tags
+    assert "hardware" in tags
+
+def test_filter_by_tags_multiple():
+    ideas = [
+        Idea(1, ["tech", "software"]),
+        Idea(2, ["fashion", "design"]),
+        Idea(3, ["tech", "hardware"]),
+    ]
+    generator = IdeaGenerator(ideas)
+    tags = ["tech", "fashion"]
+    filtered_ideas = generator.filter_by_tags(tags)
+    assert len(filtered_ideas) == 3
+    assert filtered_ideas[0].id == 1
+    assert filtered_ideas[1].id == 2
+    assert filtered_ideas[2].id == 3
+
+def test_filter_by_tags_more_than_three():
+    ideas = [
+        Idea(1, ["tech", "software"]),
+        Idea(2, ["fashion", "design"]),
+        Idea(3, ["tech", "hardware"]),
+    ]
+    generator = IdeaGenerator(ideas)
+    tags = ["tech", "fashion", "design", "hardware"]
+    with pytest.raises(ValueError):
+        generator.filter_by_tags(tags)
+
+def test_filter_by_tags_three():
+    ideas = [
+        Idea(1, ["tech", "software"]),
+        Idea(2, ["fashion", "design"]),
+        Idea(3, ["tech", "hardware"]),
+    ]
+    generator = IdeaGenerator(ideas)
+    tags = ["tech", "fashion", "design"]
+    filtered_ideas = generator.filter_by_tags(tags)
+    assert len(filtered_ideas) == 3
+    assert filtered_ideas[0].id == 1
+    assert filtered_ideas[1].id == 2
+    assert filtered_ideas[2].id == 3

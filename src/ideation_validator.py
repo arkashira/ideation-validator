@@ -1,35 +1,36 @@
-import json
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from typing import List
 
 @dataclass
-class IdeaRequest:
-    timestamp: str
-    keyword: str
+class Idea:
+    id: int
     tags: List[str]
-    user_id: int
 
-class IdeaValidator:
-    def __init__(self):
-        self.ideas = []
+class IdeaGenerator:
+    def __init__(self, ideas: List[Idea]):
+        self.ideas = ideas
 
-    def log_idea(self, keyword: str, tags: List[str], user_id: int):
-        idea = IdeaRequest(
-            timestamp=datetime.now().isoformat(),
-            keyword=keyword,
-            tags=tags,
-            user_id=user_id
-        )
-        self.ideas.append(idea)
+    def filter_by_tags(self, tags: List[str]) -> List[Idea]:
+        if len(tags) > 3:
+            raise ValueError("Cannot filter by more than 3 tags")
+        return [idea for idea in self.ideas if any(tag in idea.tags for tag in tags)]
 
-    def get_ideas(self):
-        return self.ideas
-
-    def filter_ideas_by_retention_policy(self, retention_policy: int):
-        filtered_ideas = []
+    def get_tags(self) -> List[str]:
+        all_tags = set()
         for idea in self.ideas:
-            idea_date = datetime.fromisoformat(idea.timestamp)
-            if (datetime.now() - idea_date).days <= retention_policy * 365:
-                filtered_ideas.append(idea)
-        return filtered_ideas
+            all_tags.update(idea.tags)
+        return list(all_tags)
+
+    def main(self):
+        ideas = [
+            Idea(1, ["tech", "software"]),
+            Idea(2, ["fashion", "design"]),
+            Idea(3, ["tech", "hardware"]),
+        ]
+        generator = IdeaGenerator(ideas)
+        tags = ["tech"]
+        filtered_ideas = generator.filter_by_tags(tags)
+        print([idea.id for idea in filtered_ideas])
+
+if __name__ == "__main__":
+    IdeaGenerator([]).main()
