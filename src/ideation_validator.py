@@ -1,36 +1,33 @@
+import json
 from dataclasses import dataclass
 from typing import List
 
 @dataclass
 class Idea:
-    id: int
-    tags: List[str]
+    name: str
+    revenue_potential: float
+    validation_score: float
 
-class IdeaGenerator:
-    def __init__(self, ideas: List[Idea]):
-        self.ideas = ideas
+class IdeationValidator:
+    def __init__(self):
+        self.ideas = []
 
-    def filter_by_tags(self, tags: List[str]) -> List[Idea]:
-        if len(tags) > 3:
-            raise ValueError("Cannot filter by more than 3 tags")
-        return [idea for idea in self.ideas if any(tag in idea.tags for tag in tags)]
+    def add_idea(self, idea: Idea):
+        self.ideas.append(idea)
 
-    def get_tags(self) -> List[str]:
-        all_tags = set()
-        for idea in self.ideas:
-            all_tags.update(idea.tags)
-        return list(all_tags)
+    def prioritize_roadmap(self, sort_by: str = 'revenue_potential'):
+        if sort_by == 'revenue_potential':
+            return sorted(self.ideas, key=lambda x: x.revenue_potential, reverse=True)
+        elif sort_by == 'validation_score':
+            return sorted(self.ideas, key=lambda x: x.validation_score, reverse=True)
+        else:
+            raise ValueError('Invalid sort_by parameter')
 
-    def main(self):
-        ideas = [
-            Idea(1, ["tech", "software"]),
-            Idea(2, ["fashion", "design"]),
-            Idea(3, ["tech", "hardware"]),
-        ]
-        generator = IdeaGenerator(ideas)
-        tags = ["tech"]
-        filtered_ideas = generator.filter_by_tags(tags)
-        print([idea.id for idea in filtered_ideas])
+    def get_roadmap(self, sort_by: str = 'revenue_potential'):
+        return self.prioritize_roadmap(sort_by)
 
-if __name__ == "__main__":
-    IdeaGenerator([]).main()
+    def estimate_revenue(self, idea: Idea):
+        return idea.revenue_potential
+
+    def validate_idea(self, idea: Idea):
+        return idea.validation_score

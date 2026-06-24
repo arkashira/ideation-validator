@@ -1,80 +1,41 @@
-from ideation_validator import Idea, IdeaGenerator
 import pytest
+from ideation_validator import IdeationValidator, Idea
 
-def test_filter_by_tags():
-    ideas = [
-        Idea(1, ["tech", "software"]),
-        Idea(2, ["fashion", "design"]),
-        Idea(3, ["tech", "hardware"]),
-    ]
-    generator = IdeaGenerator(ideas)
-    tags = ["tech"]
-    filtered_ideas = generator.filter_by_tags(tags)
-    assert len(filtered_ideas) == 2
-    assert filtered_ideas[0].id == 1
-    assert filtered_ideas[1].id == 3
+def test_add_idea():
+    validator = IdeationValidator()
+    idea = Idea('Test Idea', 1000.0, 0.8)
+    validator.add_idea(idea)
+    assert len(validator.ideas) == 1
 
-def test_filter_by_tags_empty():
-    ideas = [
-        Idea(1, ["tech", "software"]),
-        Idea(2, ["fashion", "design"]),
-        Idea(3, ["tech", "hardware"]),
-    ]
-    generator = IdeaGenerator(ideas)
-    tags = []
-    filtered_ideas = generator.filter_by_tags(tags)
-    assert len(filtered_ideas) == 0
+def test_prioritize_roadmap_revenue_potential():
+    validator = IdeationValidator()
+    idea1 = Idea('Idea 1', 1000.0, 0.8)
+    idea2 = Idea('Idea 2', 500.0, 0.9)
+    validator.add_idea(idea1)
+    validator.add_idea(idea2)
+    roadmap = validator.prioritize_roadmap('revenue_potential')
+    assert roadmap[0].name == 'Idea 1'
 
-def test_get_tags():
-    ideas = [
-        Idea(1, ["tech", "software"]),
-        Idea(2, ["fashion", "design"]),
-        Idea(3, ["tech", "hardware"]),
-    ]
-    generator = IdeaGenerator(ideas)
-    tags = generator.get_tags()
-    assert len(tags) == 5
-    assert "tech" in tags
-    assert "software" in tags
-    assert "fashion" in tags
-    assert "design" in tags
-    assert "hardware" in tags
+def test_prioritize_roadmap_validation_score():
+    validator = IdeationValidator()
+    idea1 = Idea('Idea 1', 1000.0, 0.8)
+    idea2 = Idea('Idea 2', 500.0, 0.9)
+    validator.add_idea(idea1)
+    validator.add_idea(idea2)
+    roadmap = validator.prioritize_roadmap('validation_score')
+    assert roadmap[0].name == 'Idea 2'
 
-def test_filter_by_tags_multiple():
-    ideas = [
-        Idea(1, ["tech", "software"]),
-        Idea(2, ["fashion", "design"]),
-        Idea(3, ["tech", "hardware"]),
-    ]
-    generator = IdeaGenerator(ideas)
-    tags = ["tech", "fashion"]
-    filtered_ideas = generator.filter_by_tags(tags)
-    assert len(filtered_ideas) == 3
-    assert filtered_ideas[0].id == 1
-    assert filtered_ideas[1].id == 2
-    assert filtered_ideas[2].id == 3
+def test_estimate_revenue():
+    validator = IdeationValidator()
+    idea = Idea('Test Idea', 1000.0, 0.8)
+    assert validator.estimate_revenue(idea) == 1000.0
 
-def test_filter_by_tags_more_than_three():
-    ideas = [
-        Idea(1, ["tech", "software"]),
-        Idea(2, ["fashion", "design"]),
-        Idea(3, ["tech", "hardware"]),
-    ]
-    generator = IdeaGenerator(ideas)
-    tags = ["tech", "fashion", "design", "hardware"]
+def test_validate_idea():
+    validator = IdeationValidator()
+    idea = Idea('Test Idea', 1000.0, 0.8)
+    assert validator.validate_idea(idea) == 0.8
+
+def test_invalid_sort_by():
+    validator = IdeationValidator()
     with pytest.raises(ValueError):
-        generator.filter_by_tags(tags)
-
-def test_filter_by_tags_three():
-    ideas = [
-        Idea(1, ["tech", "software"]),
-        Idea(2, ["fashion", "design"]),
-        Idea(3, ["tech", "hardware"]),
-    ]
-    generator = IdeaGenerator(ideas)
-    tags = ["tech", "fashion", "design"]
-    filtered_ideas = generator.filter_by_tags(tags)
-    assert len(filtered_ideas) == 3
-    assert filtered_ideas[0].id == 1
-    assert filtered_ideas[1].id == 2
-    assert filtered_ideas[2].id == 3
+        validator.prioritize_roadmap('invalid_sort_by')
