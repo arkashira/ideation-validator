@@ -1,57 +1,64 @@
-import argparse
 import json
-import random
 from dataclasses import dataclass
-from typing import List, Dict
+from datetime import datetime, timedelta
+from typing import Dict, List
 
 @dataclass
 class Idea:
-    title: str
-    description: str
+    name: str
+    monthly_search_volume: int
+    google_trends_score: int
+    competing_products: int
+    trend_graph: List[int]
 
 class IdeationValidator:
-    def __init__(self):
-        self.session = []
+    def __init__(self, ideas: List[Idea]):
+        self.ideas = ideas
+        self.data_sources = {
+            "monthly_search_volume": "Google Keyword Planner",
+            "google_trends_score": "Google Trends",
+            "competing_products": "Product Hunt",
+            "trend_graph": "Google Trends"
+        }
 
-    def generate_ideas(self, niche: str) -> List[Idea]:
-        keywords = set(niche.lower().split())
-        ideas = [
-            {"title": "Remote Work Tracker", "description": "A tool to track remote work hours."},
-            {"title": "Fitness Planner", "description": "An app to plan daily fitness routines."},
-            {"title": "Remote Team Chat", "description": "A chat platform for remote teams."},
-            {"title": "Fitness Tracker", "description": "A tracker for fitness goals and progress."},
-            {"title": "Work-Life Balance App", "description": "An app to balance work and personal life."},
-            {"title": "Fitness Challenge", "description": "A challenge-based fitness program."},
-            {"title": "Remote Collaboration Tool", "description": "A tool for remote collaboration."},
-            {"title": "Fitness Journal", "description": "A journal to log fitness activities."},
-            {"title": "Remote Work Calendar", "description": "A calendar for remote work schedules."},
-            {"title": "Fitness Community", "description": "A community for fitness enthusiasts."}
-        ]
-        
-        filtered_ideas = [idea for idea in ideas if any(keyword in idea['title'].lower() or keyword in idea['description'].lower() for keyword in keywords)]
-        unique_ideas = []
-        titles = set()
-        
-        for idea in filtered_ideas:
-            if idea['title'] not in titles:
-                unique_ideas.append(Idea(idea['title'], idea['description']))
-                titles.add(idea['title'])
-                
-        return random.sample(unique_ideas, min(len(unique_ideas), 5))
+    def get_validation_metrics(self, idea: Idea) -> Dict[str, str]:
+        metrics = {
+            "monthly_search_volume": str(idea.monthly_search_volume),
+            "google_trends_score": str(idea.google_trends_score),
+            "competing_products": str(idea.competing_products),
+            "trend_graph": str(idea.trend_graph)
+        }
+        return metrics
 
-    def store_ideas(self, ideas: List[Idea]):
-        self.session.extend([{"title": idea.title, "description": idea.description} for idea in ideas])
+    def refresh_data(self) -> None:
+        # Simulate data refresh
+        for idea in self.ideas:
+            idea.monthly_search_volume += 1
+            idea.google_trends_score += 1
+            idea.competing_products += 1
+            idea.trend_graph.append(1)
 
-def main():
-    parser = argparse.ArgumentParser(description="Generate AI-generated software-tool ideas.")
-    parser.add_argument("niche", type=str, help="The niche for generating ideas.")
-    args = parser.parse_args()
+    def get_data_sources(self) -> Dict[str, str]:
+        return self.data_sources
 
-    ideation_validator = IdeationValidator()
-    ideas = ideation_validator.generate_ideas(args.niche)
-    ideation_validator.store_ideas(ideas)
+    def get_idea_list(self) -> List[Idea]:
+        return self.ideas
 
-    print(json.dumps([{"title": idea.title, "description": idea.description} for idea in ideas], indent=2))
+def load_ideas() -> List[Idea]:
+    ideas = [
+        Idea("Idea 1", 100, 50, 10, [1, 2, 3]),
+        Idea("Idea 2", 200, 60, 20, [4, 5, 6]),
+        Idea("Idea 3", 300, 70, 30, [7, 8, 9])
+    ]
+    return ideas
+
+def main() -> None:
+    ideas = load_ideas()
+    validator = IdeationValidator(ideas)
+    print(validator.get_validation_metrics(ideas[0]))
+    validator.refresh_data()
+    print(validator.get_data_sources())
+    print(validator.get_idea_list())
 
 if __name__ == "__main__":
     main()
