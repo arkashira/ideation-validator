@@ -1,41 +1,40 @@
-import pytest
-from ideation_validator import IdeationValidator, Idea
+from ideation_validator import IdeationValidator, Idea, load_ideas
 
-def test_add_idea():
-    validator = IdeationValidator()
-    idea = Idea('Test Idea', 1000.0, 0.8)
-    validator.add_idea(idea)
-    assert len(validator.ideas) == 1
+def test_get_validation_metrics():
+    ideas = load_ideas()
+    validator = IdeationValidator(ideas)
+    metrics = validator.get_validation_metrics("Idea 1")
+    assert metrics["monthly_search_volume"] == 100
+    assert metrics["google_trends_score"] == 50
+    assert metrics["competing_products"] == 10
+    assert metrics["trend_graph"] == [1, 2, 3]
 
-def test_prioritize_roadmap_revenue_potential():
-    validator = IdeationValidator()
-    idea1 = Idea('Idea 1', 1000.0, 0.8)
-    idea2 = Idea('Idea 2', 500.0, 0.9)
-    validator.add_idea(idea1)
-    validator.add_idea(idea2)
-    roadmap = validator.prioritize_roadmap('revenue_potential')
-    assert roadmap[0].name == 'Idea 1'
+def test_get_validation_metrics_idea_not_found():
+    ideas = load_ideas()
+    validator = IdeationValidator(ideas)
+    metrics = validator.get_validation_metrics("Idea 3")
+    assert metrics["error"] == "Idea not found"
 
-def test_prioritize_roadmap_validation_score():
-    validator = IdeationValidator()
-    idea1 = Idea('Idea 1', 1000.0, 0.8)
-    idea2 = Idea('Idea 2', 500.0, 0.9)
-    validator.add_idea(idea1)
-    validator.add_idea(idea2)
-    roadmap = validator.prioritize_roadmap('validation_score')
-    assert roadmap[0].name == 'Idea 2'
+def test_refresh_data():
+    ideas = load_ideas()
+    validator = IdeationValidator(ideas)
+    validator.refresh_data()
+    assert ideas[0].monthly_search_volume == 101
+    assert ideas[0].google_trends_score == 51
+    assert ideas[0].competing_products == 11
+    assert ideas[0].trend_graph == [1, 2, 3, 1]
 
-def test_estimate_revenue():
-    validator = IdeationValidator()
-    idea = Idea('Test Idea', 1000.0, 0.8)
-    assert validator.estimate_revenue(idea) == 1000.0
+def test_get_credits():
+    ideas = load_ideas()
+    validator = IdeationValidator(ideas)
+    credits = validator.get_credits("Idea 1")
+    assert credits["monthly_search_volume"] == "Google Trends"
+    assert credits["google_trends_score"] == "Google Trends"
+    assert credits["competing_products"] == "Product Hunt"
+    assert credits["trend_graph"] == "Google Trends"
 
-def test_validate_idea():
-    validator = IdeationValidator()
-    idea = Idea('Test Idea', 1000.0, 0.8)
-    assert validator.validate_idea(idea) == 0.8
-
-def test_invalid_sort_by():
-    validator = IdeationValidator()
-    with pytest.raises(ValueError):
-        validator.prioritize_roadmap('invalid_sort_by')
+def test_get_credits_idea_not_found():
+    ideas = load_ideas()
+    validator = IdeationValidator(ideas)
+    credits = validator.get_credits("Idea 3")
+    assert credits["error"] == "Idea not found"

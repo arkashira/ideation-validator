@@ -1,33 +1,54 @@
 import json
 from dataclasses import dataclass
-from typing import List
+from datetime import datetime, timedelta
+from typing import Dict, List
 
 @dataclass
 class Idea:
     name: str
-    revenue_potential: float
-    validation_score: float
+    monthly_search_volume: int
+    google_trends_score: int
+    competing_products: int
+    trend_graph: List[int]
 
 class IdeationValidator:
-    def __init__(self):
-        self.ideas = []
+    def __init__(self, ideas: List[Idea]):
+        self.ideas = ideas
 
-    def add_idea(self, idea: Idea):
-        self.ideas.append(idea)
+    def get_validation_metrics(self, idea_name: str) -> Dict:
+        for idea in self.ideas:
+            if idea.name == idea_name:
+                return {
+                    "monthly_search_volume": idea.monthly_search_volume,
+                    "google_trends_score": idea.google_trends_score,
+                    "competing_products": idea.competing_products,
+                    "trend_graph": idea.trend_graph,
+                }
+        return {"error": "Idea not found"}
 
-    def prioritize_roadmap(self, sort_by: str = 'revenue_potential'):
-        if sort_by == 'revenue_potential':
-            return sorted(self.ideas, key=lambda x: x.revenue_potential, reverse=True)
-        elif sort_by == 'validation_score':
-            return sorted(self.ideas, key=lambda x: x.validation_score, reverse=True)
-        else:
-            raise ValueError('Invalid sort_by parameter')
+    def refresh_data(self):
+        # Simulate data refresh
+        for idea in self.ideas:
+            idea.monthly_search_volume += 1
+            idea.google_trends_score += 1
+            idea.competing_products += 1
+            idea.trend_graph.append(1)
 
-    def get_roadmap(self, sort_by: str = 'revenue_potential'):
-        return self.prioritize_roadmap(sort_by)
+    def get_credits(self, idea_name: str) -> Dict:
+        for idea in self.ideas:
+            if idea.name == idea_name:
+                return {
+                    "monthly_search_volume": "Google Trends",
+                    "google_trends_score": "Google Trends",
+                    "competing_products": "Product Hunt",
+                    "trend_graph": "Google Trends",
+                }
+        return {"error": "Idea not found"}
 
-    def estimate_revenue(self, idea: Idea):
-        return idea.revenue_potential
-
-    def validate_idea(self, idea: Idea):
-        return idea.validation_score
+def load_ideas() -> List[Idea]:
+    # Simulate loading ideas from a database
+    ideas = [
+        Idea("Idea 1", 100, 50, 10, [1, 2, 3]),
+        Idea("Idea 2", 200, 60, 20, [4, 5, 6]),
+    ]
+    return ideas
