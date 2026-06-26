@@ -1,45 +1,36 @@
+from ideation_validator import IdeationValidator, Idea
 import pytest
-from src.ideation_validator import Idea, IdeationValidator, load_ideas
+import time
 
-def test_get_validation_metrics() -> None:
-    idea = Idea("Idea 1", 100, 50, 10, [1, 2, 3])
-    validator = IdeationValidator([idea])
-    metrics = validator.get_validation_metrics(idea)
-    assert metrics["monthly_search_volume"] == "100"
-    assert metrics["google_trends_score"] == "50"
-    assert metrics["competing_products"] == "10"
-    assert metrics["trend_graph"] == "[1, 2, 3]"
+def test_calculate_score():
+    validator = IdeationValidator()
+    idea = Idea("Test Idea", "This is a test idea")
+    score = validator.calculate_score(idea)
+    assert score == len("Test Idea") + len("This is a test idea")
 
-def test_refresh_data() -> None:
-    idea = Idea("Idea 1", 100, 50, 10, [1, 2, 3])
-    validator = IdeationValidator([idea])
-    validator.refresh_data()
-    assert idea.monthly_search_volume == 101
-    assert idea.google_trends_score == 51
-    assert idea.competing_products == 11
-    assert idea.trend_graph == [1, 2, 3, 1]
+def test_generate_explanation():
+    validator = IdeationValidator()
+    idea = Idea("Test Idea", "This is a test idea")
+    score = 10
+    explanation = validator.generate_explanation(idea, score)
+    assert explanation.startswith("The idea 'Test Idea'")
 
-def test_get_data_sources() -> None:
-    idea = Idea("Idea 1", 100, 50, 10, [1, 2, 3])
-    validator = IdeationValidator([idea])
-    data_sources = validator.get_data_sources()
-    assert data_sources["monthly_search_volume"] == "Google Keyword Planner"
-    assert data_sources["google_trends_score"] == "Google Trends"
-    assert data_sources["competing_products"] == "Product Hunt"
-    assert data_sources["trend_graph"] == "Google Trends"
+def test_validate_idea():
+    validator = IdeationValidator()
+    idea = Idea("Test Idea", "This is a test idea")
+    result = validator.validate_idea(idea)
+    assert "score" in result
+    assert "explanation" in result
 
-def test_get_idea_list() -> None:
-    idea1 = Idea("Idea 1", 100, 50, 10, [1, 2, 3])
-    idea2 = Idea("Idea 2", 200, 60, 20, [4, 5, 6])
-    validator = IdeationValidator([idea1, idea2])
-    idea_list = validator.get_idea_list()
-    assert len(idea_list) == 2
-    assert idea_list[0].name == "Idea 1"
-    assert idea_list[1].name == "Idea 2"
-
-def test_load_ideas() -> None:
-    ideas = load_ideas()
-    assert len(ideas) == 3
-    assert ideas[0].name == "Idea 1"
-    assert ideas[1].name == "Idea 2"
-    assert ideas[2].name == "Idea 3"
+def test_validate_idea_explanation_generation_time():
+    validator = IdeationValidator()
+    idea = Idea("Test Idea", "This is a test idea")
+    with pytest.raises(ValueError):
+        # Simulate slow explanation generation
+        def slow_generate_explanation(self, idea, score):
+            time.sleep(2)
+            return f"The idea '{idea.name}' has a score of {score} because it has a descriptive name and description."
+        original_method = validator.generate_explanation
+        validator.generate_explanation = lambda idea, score: slow_generate_explanation(validator, idea, score)
+        validator.validate_idea(idea)
+        validator.generate_explanation = original_method
